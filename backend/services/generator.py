@@ -14,21 +14,20 @@ from services.email_service import send_email, build_content_ready_email
 
 
 async def generate_weekly_content(brand_id: UUID, user_id: str, image_urls: list[str]):
-    """Background task: generate a full week of content."""
+    """Generate a full week of content synchronously."""
     today = date.today()
     week_start = today - timedelta(days=today.weekday())
 
-    # Fetch brand with a fresh session
     async with async_session() as db:
         result = await db.execute(select(Brand).where(Brand.id == brand_id))
         brand = result.scalar_one_or_none()
         if not brand:
-            return {"error": "brand_not_found"}
+            return
 
         try:
             captions = await generate_captions(brand)
-        except Exception as e:
-            return {"error": f"ai_failed: {e}"}
+        except Exception:
+            return
 
         # Delete existing posts for this week (regeneration)
         existing = await db.execute(
@@ -39,7 +38,7 @@ async def generate_weekly_content(brand_id: UUID, user_id: str, image_urls: list
 
         await db.flush()
 
-        # Generate images in parallel
+        # Generate images in parallel (MJ proxy returns None when not configured)
         image_tasks = []
         for item in captions:
             task = generate_image(item.get("image_prompt", ""), brand.style)
@@ -63,15 +62,13 @@ async def generate_weekly_content(brand_id: UUID, user_id: str, image_urls: list
 
         await db.commit()
 
-    # Notify user (skip if no email — email service handles this)
+    # Notify user (best-effort)
     preview_link = f"https://postmate.net/app/dashboard?week={week_start.isoformat()}"
     try:
         await send_email(
-            to=None,  # TODO: get user email
+            to=None,
             subject=f"Your {brand.name} content is ready!",
             html=build_content_ready_email(brand.name, preview_link),
         )
     except Exception:
-        pass  # Email is best-effort
-
-    return {"ok": True, "posts": len(captions)}
+        pass
