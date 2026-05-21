@@ -51,7 +51,7 @@ async def health():
 
 @app.get("/api/debug/raw")
 async def debug_raw():
-    """Show raw DeepSeek response for debugging."""
+    """Show raw DeepSeek response using the EXACT generate_captions call."""
     try:
         async with async_session() as db:
             result = await db.execute(select(Brand).limit(1))
@@ -59,32 +59,34 @@ async def debug_raw():
             if not brand:
                 return {"error": "no brand found"}
 
-        s = get_settings()
-        prompt = f"Generate 3 Instagram captions for a {brand.industry} studio named {brand.name} in {brand.city}, {brand.state}. Style: {brand.style}, Tone: {brand.tone}. Return ONLY a valid JSON array, no other text."
-        async with httpx.AsyncClient() as client:
-            resp = await client.post(
-                s.deepseek_api_url,
-                headers={"Authorization": f"Bearer {s.deepseek_api_key}", "Content-Type": "application/json"},
-                json={
-                    "model": s.deepseek_model,
-                    "messages": [
-                        {"role": "system", "content": "Output ONLY valid JSON, no markdown, no explanation."},
-                        {"role": "user", "content": prompt},
-                    ],
-                    "temperature": 0.8,
-                    "max_tokens": 4000,
-                },
-                timeout=60,
-            )
-            raw_text = resp.text
-            content = resp.json()["choices"][0]["message"]["content"]
-
-        return {
-            "raw_full": raw_text[:600],
-            "content": content[:600],
-            "content_len": len(content),
-            "first_char": repr(content[0]) if content else "empty",
-            "has_array": "[" in content,
-        }
+        from services.ai_text import generate_captions
+        result = await generate_captions(brand)
+        return {"status": "ok", "count": len(result), "first": result[0] if result else None}
     except Exception as e:
-        return {"error": str(e), "traceback": traceback.format_exc()}
+        # Show the raw API response for debugging
+        import httpx, traceback
+        from config import get_settings
+        s = get_settings()
+        from services.ai_text import _build_user_prompt
+        prompt = _build_user_prompt(brand)
+        try:
+            async with httpx.AsyncClient() as client:
+                resp = await client.post(
+                    s.deepseek_api_url,
+                    headers={"Authorization": f"Bearer {s.deepseek_api_key}", "Content-Type": "application/json"},
+                    json={
+                        "model": s.deepseek_model,
+                        "messages": [
+                            {"role": "system", "content": "You are a social media content creator."},
+                            {"role": "user", "content": prompt},
+                        ],
+                        "temperature": 0.8,
+                        "max_tokens": 4000,
+                    },
+                    timeout=60,
+                )
+                raw = resp.text[:1000]
+        except Exception as e2:
+            raw = f"also failed: {e2}"
+
+        return {"error": str(e), "raw": raw, "traceback": traceback.format_exc()}
