@@ -62,9 +62,23 @@ async def generate_captions(brand) -> list[dict]:
 
     # Extract JSON from response (handle markdown-wrapped json)
     content = content.strip()
-    if content.startswith("```"):
-        lines = content.split("\n")
-        content = "\n".join(lines[1:-1])
+    if "```" in content:
+        # Extract content between first and last ```
+        parts = content.split("```")
+        for part in parts:
+            part = part.strip()
+            if part.startswith("json"):
+                part = part[4:].strip()
+            if part.startswith("[") or part.startswith("{"):
+                content = part
+                break
+        else:
+            # Fallback: take content inside the backticks
+            idx = content.index("```")
+            end = content.rindex("```")
+            content = content[idx + 3:end].strip()
+            if content.startswith("json"):
+                content = content[4:].strip()
 
     posts = json.loads(content)
     return posts
