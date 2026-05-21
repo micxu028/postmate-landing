@@ -25,6 +25,7 @@ async def trigger_generation(
     images = img_result.scalars().all()
     image_urls = [img.url for img in images]
 
-    background_tasks.add_task(generate_weekly_content, brand, image_urls)
+    # Pass user_id so background task can fetch fresh ORM objects
+    background_tasks.add_task(generate_weekly_content, brand.id, user_id, image_urls)
 
     return {"status": "started", "message": "Content generation in progress"}

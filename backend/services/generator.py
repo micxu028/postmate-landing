@@ -1,7 +1,9 @@
 """Orchestrates the full content generation pipeline."""
 import asyncio
 import json
+import logging
 from datetime import date, timedelta
+from uuid import UUID
 from sqlalchemy import select
 from database import async_session
 from models.post import Post
@@ -11,25 +13,33 @@ from services.ai_image import generate_image
 from services.email_service import send_email, build_content_ready_email
 
 
-async def generate_weekly_content(brand: Brand, image_urls: list[str]):
+async def generate_weekly_content(brand_id: UUID, user_id: str, image_urls: list[str]):
     """Background task: generate a full week of content."""
     today = date.today()
     week_start = today - timedelta(days=today.weekday())
 
-    try:
-        captions = await generate_captions(brand)
-    except Exception as e:
-        import logging
-        logging.error(f"Content generation failed for brand {brand.id}: {e}", exc_info=True)
-        return
-
+    # Fetch brand with a fresh session
     async with async_session() as db:
+        result = await db.execute(select(Brand).where(Brand.id == brand_id))
+        brand = result.scalar_one_or_none()
+        if not brand:
+            logging.error(f"Brand {brand_id} not found in background task")
+            return
+
+        try:
+            captions = await generate_captions(brand)
+        except Exception as e:
+            logging.error(f"Content generation failed for brand {brand.id}: {e}", exc_info=True)
+            return
+
         # Delete existing posts for this week (regeneration)
         existing = await db.execute(
             select(Post).where(Post.brand_id == brand.id, Post.week_start == week_start)
         )
         for post in existing.scalars().all():
             await db.delete(post)
+
+        await db.flush()
 
         # Generate images in parallel
         image_tasks = []
@@ -55,7 +65,7 @@ async def generate_weekly_content(brand: Brand, image_urls: list[str]):
 
         await db.commit()
 
-    # Notify user
+    # Notify user (skip if no email — email service handles this)
     preview_link = f"https://postmate.net/app/dashboard?week={week_start.isoformat()}"
     await send_email(
         to=None,  # TODO: get user email
