@@ -19,7 +19,8 @@ async def generate_weekly_content(brand: Brand, image_urls: list[str]):
     try:
         captions = await generate_captions(brand)
     except Exception as e:
-        # Log failure — could notify admin
+        import logging
+        logging.error(f"Content generation failed for brand {brand.id}: {e}", exc_info=True)
         return
 
     async with async_session() as db:
