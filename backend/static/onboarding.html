@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Set Up Your Brand — PostMate</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/app.css">
+    <style>.step-content{display:none}.image-upload{border:2px dashed var(--border);border-radius:var(--radius-sm);padding:20px;text-align:center;cursor:pointer;transition:border-color .2s}.image-upload:hover{border-color:var(--accent)}#image-previews{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}</style>
+</head>
+<body>
+    <nav class="app-nav">
+        <a href="/" class="logo">PostMate</a>
+        <span style="font-size:14px;color:var(--muted)">Set up your brand</span>
+    </nav>
+    <div class="container">
+        <div class="steps">
+            <div class="step"></div><div class="step"></div><div class="step"></div>
+        </div>
+        <div class="card">
+            <form id="onboarding-form">
+                <!-- Step 0: Studio Info -->
+                <div class="step-content">
+                    <h1>Tell us about your studio</h1>
+                    <p>We'll use this to personalize your content.</p>
+                    <div class="form-group">
+                        <label>Studio name</label>
+                        <input type="text" id="studio-name" required placeholder="e.g. Sol Yoga Studio">
+                    </div>
+                    <div class="form-group">
+                        <label>City</label>
+                        <input type="text" id="city" placeholder="e.g. Austin">
+                    </div>
+                    <div class="form-group">
+                        <label>State</label>
+                        <input type="text" id="state" placeholder="e.g. TX">
+                    </div>
+                </div>
+
+                <!-- Step 1: Style -->
+                <div class="step-content">
+                    <h1>Choose your style</h1>
+                    <p>This helps AI match your brand voice.</p>
+                    <div class="form-group">
+                        <label>Industry</label>
+                        <select id="industry">
+                            <option value="yoga">Yoga Studio</option>
+                            <option value="fitness">Fitness Studio</option>
+                            <option value="pilates">Pilates Studio</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Brand style</label>
+                        <select id="style">
+                            <option value="warm">Warm & Welcoming</option>
+                            <option value="professional">Professional & Polished</option>
+                            <option value="energetic">Energetic & Bold</option>
+                            <option value="minimalist">Minimalist & Clean</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Brand tone</label>
+                        <select id="tone">
+                            <option value="friendly">Friendly & Approachable</option>
+                            <option value="professional">Professional & Informative</option>
+                            <option value="humorous">Fun & Humorous</option>
+                            <option value="inspirational">Inspirational & Uplifting</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Step 2: Images + Frequency -->
+                <div class="step-content">
+                    <h1>Upload photos & set frequency</h1>
+                    <p>Share some photos that reflect your studio's vibe.</p>
+                    <div class="form-group">
+                        <label>Brand photos</label>
+                        <div class="image-upload" onclick="document.getElementById('images-input').click()">
+                            Click to upload (5-10 photos)
+                        </div>
+                        <input type="file" id="images-input" accept="image/*" multiple style="display:none">
+                        <div id="image-previews"></div>
+                        <div class="hint">Max 5MB each. These help AI understand your visual style.</div>
+                    </div>
+                    <div class="form-group">
+                        <label>Posts per week</label>
+                        <select id="frequency">
+                            <option value="7">7 posts (daily)</option>
+                            <option value="5" selected>5 posts (weekdays)</option>
+                            <option value="3">3 posts (Mon/Wed/Fri)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Navigation -->
+                <div style="display:flex;gap:10px;margin-top:24px">
+                    <button type="button" class="btn btn-outline" id="prev-btn" style="width:auto">← Back</button>
+                    <button type="button" class="btn btn-primary" id="next-btn" style="width:auto">Next →</button>
+                    <button type="submit" class="btn btn-primary" id="submit-btn" style="display:none">Done — Generate My Content</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <script src="/static/js/api.js"></script>
+    <script src="/static/js/onboarding.js"></script>
+</body>
+</html>

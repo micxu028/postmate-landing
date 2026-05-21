@@ -1,22 +1,15 @@
 #!/bin/bash
+set -e
 echo "=== PostMate Landing Page Deploy ==="
-echo ""
 
-# Install wrangler if needed
-if ! command -v wrangler &>/dev/null; then
-    echo "Installing wrangler..."
-    npm install -g wrangler
+if [ -z "$CLOUDFLARE_API_TOKEN" ]; then
+    echo "Error: CLOUDFLARE_API_TOKEN not set"
+    echo "Usage: CLOUDFLARE_API_TOKEN=your_token ./deploy.sh"
+    exit 1
 fi
 
-# Login to Cloudflare
-echo "Please login to Cloudflare:"
-npx wrangler login
-
-# Deploy
-echo ""
-echo "Deploying to Cloudflare Pages..."
-npx wrangler pages deploy . --project-name postmate
+export CLOUDFLARE_API_TOKEN
+npx wrangler pages deploy . --project-name postmate --branch main
 
 echo ""
-echo "Done! Then set the custom domain in Cloudflare Dashboard:"
-echo "  postmate.net → Workers & Pages → postmate → Custom domains → Add postmate.net"
+echo "✅ Done! https://postmate.net"

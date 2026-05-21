@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard — PostMate</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/app.css">
+</head>
+<body>
+    <nav class="app-nav">
+        <a href="/" class="logo">PostMate</a>
+        <button id="logout-btn" class="btn btn-outline" style="width:auto;padding:6px 16px;font-size:13px;display:none">Sign Out</button>
+    </nav>
+    <div class="container">
+
+        <!-- Week navigation -->
+        <div class="week-nav">
+            <button class="btn btn-outline" id="prev-week">← Previous</button>
+            <h2 id="week-label"></h2>
+            <button class="btn btn-outline" id="next-week">Next →</button>
+        </div>
+
+        <!-- Loading state -->
+        <div id="loading-state" style="text-align:center;padding:60px 0;display:none">
+            <div class="spinner"></div>
+            <p style="margin-top:16px;color:var(--muted)">Loading your content...</p>
+        </div>
+
+        <!-- Empty state -->
+        <div id="empty-state" style="text-align:center;padding:60px 0;display:none">
+            <div style="font-size:48px;margin-bottom:16px">📝</div>
+            <h2 style="font-size:22px;font-weight:700;margin-bottom:8px">No content yet</h2>
+            <p style="color:var(--muted);margin-bottom:24px">Generate your first week of posts to see them here.</p>
+            <button class="btn btn-primary" id="generate-btn" style="width:auto">Generate Next Week →</button>
+        </div>
+
+        <!-- Post grid -->
+        <div class="post-grid" id="post-grid"></div>
+
+    </div>
+    <script src="/static/js/api.js"></script>
+    <script src="/static/js/auth.js"></script>
+    <script src="/static/js/dashboard.js"></script>
+</body>
+</html>
