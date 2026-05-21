@@ -35,6 +35,8 @@ app.include_router(generate.router)
 static_dir = Path(__file__).parent / "static"
 if static_dir.exists():
     app.mount("/app", StaticFiles(directory=str(static_dir), html=True), name="app")
+    # Also serve static files at /static for CSS/JS
+    app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
 
 
 @app.get("/api/health")
