@@ -64,10 +64,31 @@ async def debug_gen():
             brand2 = result.scalar_one_or_none()
             if not brand2:
                 return {"error": "brand not found in new session"}
+            # First get the raw response
+            import httpx
+            from config import get_settings
+            s = get_settings()
+            prompt = f"Generate 3 Instagram captions for a {brand2.industry} studio named {brand2.name} in {brand2.city}, {brand2.state}. Style: {brand2.style}, Tone: {brand2.tone}. Return ONLY valid JSON array with objects having day, caption, hashtags, image_prompt fields."
+            async with httpx.AsyncClient() as client:
+                resp = await client.post(
+                    s.deepseek_api_url,
+                    headers={"Authorization": f"Bearer {s.deepseek_api_key}", "Content-Type": "application/json"},
+                    json={
+                        "model": s.deepseek_model,
+                        "messages": [
+                            {"role": "system", "content": "You are a social media content creator. Output ONLY valid JSON, no markdown, no explanation."},
+                            {"role": "user", "content": prompt},
+                        ],
+                        "temperature": 0.8,
+                        "max_tokens": 4000,
+                    },
+                    timeout=60,
+                )
+                raw = resp.text[:500]
             try:
                 captions = await generate_captions(brand2)
             except Exception as e:
-                return {"error": f"AI generation failed: {e}", "traceback": traceback.format_exc()}
+                return {"error": f"AI generation failed: {e}", "raw_response": raw, "traceback": traceback.format_exc()}
             # Delete existing
             from datetime import date, timedelta
             week_start = date.today() - timedelta(days=date.today().weekday())
