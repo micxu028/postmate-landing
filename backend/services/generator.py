@@ -23,14 +23,12 @@ async def generate_weekly_content(brand_id: UUID, user_id: str, image_urls: list
         result = await db.execute(select(Brand).where(Brand.id == brand_id))
         brand = result.scalar_one_or_none()
         if not brand:
-            logging.error(f"Brand {brand_id} not found in background task")
-            return
+            return {"error": "brand_not_found"}
 
         try:
             captions = await generate_captions(brand)
         except Exception as e:
-            logging.error(f"Content generation failed for brand {brand.id}: {e}", exc_info=True)
-            return
+            return {"error": f"ai_failed: {e}"}
 
         # Delete existing posts for this week (regeneration)
         existing = await db.execute(
@@ -67,8 +65,13 @@ async def generate_weekly_content(brand_id: UUID, user_id: str, image_urls: list
 
     # Notify user (skip if no email — email service handles this)
     preview_link = f"https://postmate.net/app/dashboard?week={week_start.isoformat()}"
-    await send_email(
-        to=None,  # TODO: get user email
-        subject=f"Your {brand.name} content is ready!",
-        html=build_content_ready_email(brand.name, preview_link),
-    )
+    try:
+        await send_email(
+            to=None,  # TODO: get user email
+            subject=f"Your {brand.name} content is ready!",
+            html=build_content_ready_email(brand.name, preview_link),
+        )
+    except Exception:
+        pass  # Email is best-effort
+
+    return {"ok": True, "posts": len(captions)}

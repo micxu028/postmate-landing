@@ -26,6 +26,6 @@ async def trigger_generation(
     image_urls = [img.url for img in images]
 
     # Run synchronously for now (FastAPI BackgroundTasks sometimes lose DB context)
-    await generate_weekly_content(brand.id, user_id, image_urls)
+    result = await generate_weekly_content(brand.id, user_id, image_urls)
 
-    return {"status": "ok", "message": "Content generated"}
+    return {"status": "ok", "message": "Content generated", "debug": result}
