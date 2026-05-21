@@ -67,5 +67,20 @@ async def generate_captions(brand) -> list[dict]:
     if start != -1 and end != -1 and end > start:
         content = content[start:end+1]
 
-    posts = json.loads(content)
+    # Clean common JSON issues
+    content = content.replace("```json", "").replace("```", "").replace("``", "")
+
+    content = content.strip()
+    if content.startswith("json"):
+        content = content[4:].strip()
+
+    try:
+        posts = json.loads(content)
+    except json.JSONDecodeError as e:
+        # Try again with more cleaning
+        # Remove trailing commas before closing bracket
+        import re
+        content = re.sub(r',\s*([\]}])', r'\1', content)
+        posts = json.loads(content)
+
     return posts

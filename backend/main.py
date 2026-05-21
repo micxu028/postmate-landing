@@ -11,7 +11,8 @@ from sqlalchemy import select
 from models.brand import Brand
 from models.post import Post
 from services.ai_text import generate_captions
-import json, traceback, logging
+from config import get_settings
+import json, traceback, logging, httpx
 
 settings = get_settings()
 
@@ -48,66 +49,42 @@ async def health():
     return {"status": "ok", "app": settings.app_name}
 
 
-@app.get("/api/debug/gen")
-async def debug_gen():
-    """Debug: simulate exactly what background task does."""
+@app.get("/api/debug/raw")
+async def debug_raw():
+    """Show raw DeepSeek response for debugging."""
     try:
         async with async_session() as db:
             result = await db.execute(select(Brand).limit(1))
             brand = result.scalar_one_or_none()
             if not brand:
                 return {"error": "no brand found"}
-            bid = brand.id
-        # Now simulate background task flow
-        async with async_session() as db:
-            result = await db.execute(select(Brand).where(Brand.id == bid))
-            brand2 = result.scalar_one_or_none()
-            if not brand2:
-                return {"error": "brand not found in new session"}
-            # First get the raw response
-            import httpx
-            from config import get_settings
-            s = get_settings()
-            prompt = f"Generate 3 Instagram captions for a {brand2.industry} studio named {brand2.name} in {brand2.city}, {brand2.state}. Style: {brand2.style}, Tone: {brand2.tone}. Return ONLY valid JSON array with objects having day, caption, hashtags, image_prompt fields."
-            async with httpx.AsyncClient() as client:
-                resp = await client.post(
-                    s.deepseek_api_url,
-                    headers={"Authorization": f"Bearer {s.deepseek_api_key}", "Content-Type": "application/json"},
-                    json={
-                        "model": s.deepseek_model,
-                        "messages": [
-                            {"role": "system", "content": "You are a social media content creator. Output ONLY valid JSON, no markdown, no explanation."},
-                            {"role": "user", "content": prompt},
-                        ],
-                        "temperature": 0.8,
-                        "max_tokens": 4000,
-                    },
-                    timeout=60,
-                )
-                raw = resp.text[:500]
-            try:
-                captions = await generate_captions(brand2)
-            except Exception as e:
-                return {"error": f"AI generation failed: {e}", "raw_response": raw, "traceback": traceback.format_exc()}
-            # Delete existing
-            from datetime import date, timedelta
-            week_start = date.today() - timedelta(days=date.today().weekday())
-            existing = await db.execute(select(Post).where(Post.brand_id == brand2.id))
-            for post in existing.scalars().all():
-                await db.delete(post)
-            await db.flush()
-            # Create posts
-            for i, item in enumerate(captions[:1]):  # just 1 for debug
-                post = Post(
-                    brand_id=brand2.id,
-                    week_start=week_start,
-                    day_of_week=item.get("day", i),
-                    caption=item.get("caption", ""),
-                    hashtags=json.dumps(item.get("hashtags", [])),
-                    status="pending",
-                )
-                db.add(post)
-            await db.commit()
-            return {"status": "ok", "captions_count": len(captions), "first_caption": captions[0].get("caption", "")[:80]}
+
+        s = get_settings()
+        prompt = f"Generate 3 Instagram captions for a {brand.industry} studio named {brand.name} in {brand.city}, {brand.state}. Style: {brand.style}, Tone: {brand.tone}. Return ONLY a valid JSON array, no other text."
+        async with httpx.AsyncClient() as client:
+            resp = await client.post(
+                s.deepseek_api_url,
+                headers={"Authorization": f"Bearer {s.deepseek_api_key}", "Content-Type": "application/json"},
+                json={
+                    "model": s.deepseek_model,
+                    "messages": [
+                        {"role": "system", "content": "Output ONLY valid JSON, no markdown, no explanation."},
+                        {"role": "user", "content": prompt},
+                    ],
+                    "temperature": 0.8,
+                    "max_tokens": 4000,
+                },
+                timeout=60,
+            )
+            raw_text = resp.text
+            content = resp.json()["choices"][0]["message"]["content"]
+
+        return {
+            "raw_full": raw_text[:600],
+            "content": content[:600],
+            "content_len": len(content),
+            "first_char": repr(content[0]) if content else "empty",
+            "has_array": "[" in content,
+        }
     except Exception as e:
         return {"error": str(e), "traceback": traceback.format_exc()}
