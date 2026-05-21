@@ -9,8 +9,9 @@ class Settings(BaseSettings):
 
     # Database — SQLite for local dev, PostgreSQL (Supabase) for production
     # Local: sqlite+aiosqlite:///./postmate.db
-    # Production: postgresql+asyncpg://user:pass@host:5432/db
+    # Production: postgresql+asyncpg://user:pass@host:5432/postgres
     database_url: str = "sqlite+aiosqlite:///./postmate.db"
+    supabase_url: str = ""
 
     # JWT
     jwt_secret: str = "change-me-in-production"
@@ -26,11 +27,8 @@ class Settings(BaseSettings):
     mj_api_url: str = ""
     mj_api_key: str = ""
 
-    # Brevo SMTP
-    smtp_host: str = "smtp-relay.brevo.com"
-    smtp_port: int = 587
-    smtp_username: str = ""
-    smtp_password: str = ""
+    # Resend Email
+    resend_api_key: str = ""
     email_from: str = "hello@postmate.net"
     email_from_name: str = "PostMate Team"
 

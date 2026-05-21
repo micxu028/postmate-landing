@@ -207,7 +207,7 @@ Phase 4 可以和 1/2/3 并行进行。
 ✅ 代理（mihomo + Just My Socks）运行中
 ✅ 开发环境就绪
 
-❌ 需要先做：注册 Brevo 用于发信
+✅ Brevo 已注册（换了邮箱）
 ❌ 需要先做：注册 Supabase（免费版）
 ❌ 需要先做：注册 Railway（免费版，绑 GitHub）
 
@@ -215,8 +215,7 @@ Phase 4 可以和 1/2/3 并行进行。
 
 ## 11. 第一阶段具体行动
 
-### 今天/明天
-1. 注册 Brevo（你操作）
-2. 注册 Supabase（我来操作）
-3. 注册 Railway（你操作，需要 GitHub 账号）
-4. 我开始写 Phase 0 代码
+### 当前待办
+1. ~~注册 Supabase — 我来操作~~ ✅ 已完成
+2. 注册 Railway — 需要 GitHub 账号
+3. DeepSeek API Key 填进 .env
