@@ -6,31 +6,27 @@ DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sun
 
 SYSTEM_PROMPT = """You are a social media content creator for small fitness studios.
 Your job is to generate engaging Instagram captions that feel authentic, not salesy.
-Each post should sound like it comes from a real local business owner who loves what they do."""
+Each post should sound like it comes from a real local business owner who loves what they do.
+
+You ALWAYS output the exact JSON format requested, with no extra text, no markdown, no backticks."""
 
 
 def _build_user_prompt(brand) -> str:
-    return f"""Generate {brand.post_frequency} Instagram captions for a {brand.industry} studio.
+    return f"""Generate {brand.post_frequency} Instagram posts for a {brand.industry} studio.
 
 Studio name: {brand.name}
 Location: {brand.city}, {brand.state}
 Brand style: {brand.style}
 Brand tone: {brand.tone}
 
-For each day of the week (Mon-Sun, but only {brand.post_frequency} posts), provide:
-1. caption (100-200 characters, American English, include 1-2 emojis, end with a CTA)
-2. hashtags (8-12 relevant tags)
-3. image_prompt (a vivid description for AI image generation, matching the caption)
+Each post object must have these exact fields:
+- "day": integer 0-6 (0=Monday)
+- "caption": 100-200 characters, American English, include 1-2 emojis, end with a CTA
+- "hashtags": array of 8-12 strings like ["#tag1", "#tag2"]
+- "image_prompt": vivid English description for AI image generation matching the caption
 
-Output ONLY a JSON array with {brand.post_frequency} objects, no explanation:
-[
-  {{
-    "day": 0,
-    "caption": "...",
-    "hashtags": ["#tag1", "#tag2"],
-    "image_prompt": "..."
-  }}
-]"""
+Output {brand.post_frequency} objects in this exact JSON format, no other text:
+[{{"day":0,"caption":"...","hashtags":["#tag"],"image_prompt":"..."}}]"""
 
 
 async def generate_captions(brand) -> list[dict]:
