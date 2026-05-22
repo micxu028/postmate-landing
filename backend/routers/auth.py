@@ -66,6 +66,9 @@ async def login(req: LoginRequest, db: AsyncSession = Depends(get_db)):
     if not user or not verify_password(req.password, user.password_hash):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email or password")
 
+    user.last_login_at = datetime.now(timezone.utc)
+    await db.commit()
+
     token = create_token(str(user.id))
     return AuthResponse(token=token, user_id=str(user.id))
 

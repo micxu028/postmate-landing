@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
     logoutBtn.style.display = 'block';
     logoutBtn.onclick = () => {
       localStorage.removeItem('token');
-      window.location.href = '/app/login';
+      window.location.href = '/app/login.html';
     };
   }
 
