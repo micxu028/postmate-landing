@@ -4,14 +4,16 @@ from config import get_settings
 
 
 async def generate_image(image_prompt: str, brand_style: str) -> Optional[str]:
-    """Generate image via MJ proxy. Returns image URL or None on failure."""
+    """Generate image URL. Uses MJ proxy if configured, otherwise falls back to Unsplash."""
     settings = get_settings()
-    if not settings.mj_api_url:
-        # No MJ proxy configured — return placeholder
-        return None
+    if settings.mj_api_url:
+        return await _mj_generate(image_prompt, brand_style, settings)
+    return await _unsplash_fallback(image_prompt, brand_style)
 
+
+async def _mj_generate(image_prompt: str, brand_style: str, settings) -> Optional[str]:
+    """Generate via MJ proxy."""
     enhanced_prompt = f"{image_prompt}, {brand_style} style, clean composition, soft lighting --ar 1:1 --v 6"
-
     async with AsyncClient() as client:
         try:
             resp = await client.post(
@@ -24,5 +26,18 @@ async def generate_image(image_prompt: str, brand_style: str) -> Optional[str]:
             data = resp.json()
             return data.get("image_url") or data.get("url")
         except Exception:
-            # MJ proxy unreliable — return None and let caller handle
             return None
+
+
+def _unsplash_url(image_prompt: str) -> Optional[str]:
+    """Build an Unsplash source URL from the prompt keywords (no API key needed)."""
+    from urllib.parse import quote
+    words = image_prompt[:120].replace(",", " ").split()
+    stopwords = {"a","an","the","with","in","on","at","for","of","to","and","is","that","this","style","shot","photo","photography","view","close","up","wide","angle","soft","clean"}
+    keywords = [w for w in words if w.lower() not in stopwords and len(w) > 3][:3]
+    query = ",".join(keywords) if keywords else "fitness"
+    return f"https://source.unsplash.com/400x400/?{quote(query)}"
+
+async def _unsplash_fallback(image_prompt: str, brand_style: str) -> Optional[str]:
+    """Get an Unsplash image URL for the given prompt (no API key needed)."""
+    return _unsplash_url(image_prompt)
