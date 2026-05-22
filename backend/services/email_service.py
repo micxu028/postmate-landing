@@ -8,17 +8,31 @@ async def send_email(to: str, subject: str, html: str) -> bool:
         return False
 
     async with httpx.AsyncClient() as client:
+        primary_from = f"{settings.email_from_name} <{settings.email_from}>"
         resp = await client.post(
             "https://api.resend.com/emails",
             headers={"Authorization": f"Bearer {settings.resend_api_key}"},
             json={
-                "from": f"{settings.email_from_name} <{settings.email_from}>",
+                "from": primary_from,
                 "to": [to],
                 "subject": subject,
                 "html": html,
             },
             timeout=30,
         )
+        if not resp.is_success and "domain is not verified" in resp.text:
+            # Fallback to Resend's default sender until postmate.net is verified
+            resp = await client.post(
+                "https://api.resend.com/emails",
+                headers={"Authorization": f"Bearer {settings.resend_api_key}"},
+                json={
+                    "from": settings.email_from_fallback,
+                    "to": [to],
+                    "subject": subject,
+                    "html": html,
+                },
+                timeout=30,
+            )
         return resp.is_success
 
 

@@ -31,6 +31,7 @@ class Settings(BaseSettings):
     resend_api_key: str = ""
     email_from: str = "hello@postmate.net"
     email_from_name: str = "PostMate Team"
+    email_from_fallback: str = "PostMate <onboarding@resend.dev>"
 
     # CORS
     cors_origins: str = "http://localhost:8000,https://postmate.net,https://app.postmate.net"
