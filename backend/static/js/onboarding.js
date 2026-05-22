@@ -107,31 +107,31 @@ document.addEventListener('DOMContentLoaded', () => {
     submitBtn.disabled = true;
     submitBtn.textContent = 'Setting up...';
 
-    // Get card-select values
-    const styleEl = document.querySelector('#style-select .card-option.selected');
-    const toneEl = document.querySelector('#tone-select .card-option.selected');
+    try {
+      // Get card-select values
+      const styleEl = document.querySelector('#style-select .card-option.selected');
+      const toneEl = document.querySelector('#tone-select .card-option.selected');
 
-    const files = document.getElementById('images-input')?.files;
-    const imageUrls = [];
-    if (files) {
-      for (const file of files) {
-        try {
-          const formData = new FormData();
-          formData.append('file', file);
-          const res = await fetch('/api/upload', {
-            method: 'POST',
-            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
-            body: formData,
-          });
-          const data = await res.json();
-          if (res.ok) imageUrls.push(data.url);
-        } catch (err) {
-          console.warn('Upload failed, continuing:', err);
+      const files = document.getElementById('images-input')?.files;
+      const imageUrls = [];
+      if (files && files.length > 0) {
+        for (const file of files) {
+          try {
+            const formData = new FormData();
+            formData.append('file', file);
+            const res = await fetch('/api/upload', {
+              method: 'POST',
+              headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+              body: formData,
+            });
+            const data = await res.json();
+            if (res.ok) imageUrls.push(data.url);
+          } catch (err) {
+            console.warn('Upload failed, continuing:', err);
+          }
         }
       }
-    }
 
-    try {
       await API.createBrand({
         name: document.getElementById('studio-name').value.trim(),
         industry: document.getElementById('industry').value,
@@ -146,7 +146,11 @@ document.addEventListener('DOMContentLoaded', () => {
       // Go to generation progress page
       window.location.href = '/app/generating.html';
     } catch (err) {
-      showToast(err.message, 'error');
+      if (typeof showToast === 'function') {
+        showToast(err.message || 'Something went wrong', 'error');
+      } else {
+        alert(err.message || 'Something went wrong');
+      }
       submitBtn.disabled = false;
       submitBtn.textContent = 'Generate My Content →';
     }
