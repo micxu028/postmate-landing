@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to PostMate!</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/app/css/app.css">
+    <style>
+        .thanks-container {max-width:520px;margin:60px auto 0;padding:0 20px;text-align:center}
+        .checkmark {width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#10b981,#059669);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;animation:scaleIn .5s cubic-bezier(.34,1.56,.64,1)}
+        .checkmark svg {width:36px;height:36px;stroke:#fff;stroke-width:3;fill:none}
+        .thanks-title {font-size:28px;font-weight:800;margin-bottom:4px;letter-spacing:-.02em}
+        .thanks-sub {color:var(--muted);font-size:15px;margin-bottom:32px;line-height:1.5}
+        .perks {display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:32px}
+        .perk-card {background:var(--card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:20px 12px;text-align:center}
+        .perk-icon {font-size:28px;margin-bottom:8px}
+        .perk-title {font-size:13px;font-weight:600;color:var(--fg)}
+        .perk-desc {font-size:11px;color:var(--muted);margin-top:4px;line-height:1.4}
+        .next-steps {text-align:left;background:#f9fafb;border-radius:var(--radius-sm);padding:20px 24px;margin-bottom:32px}
+        .next-steps h3 {font-size:14px;font-weight:700;margin-bottom:12px;color:var(--fg)}
+        .next-step-item {display:flex;align-items:center;gap:12px;padding:8px 0;font-size:14px;color:var(--muted)}
+        .next-step-item .num {width:24px;height:24px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0}
+        .footer-links {display:flex;justify-content:center;gap:16px;flex-wrap:wrap;margin-top:24px}
+        @keyframes scaleIn {0%{transform:scale(0)}100%{transform:scale(1)}}
+    </style>
+</head>
+<body>
+    <nav class="app-nav">
+        <a href="/" class="logo">PostMate</a>
+    </nav>
+    <div class="thanks-container">
+        <div class="checkmark">
+            <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <h1 class="thanks-title">Welcome to PostMate!</h1>
+        <p class="thanks-sub">Your brand is set up and your first week of content is on its way.</p>
+
+        <div class="perks">
+            <div class="perk-card">
+                <div class="perk-icon">🤖</div>
+                <div class="perk-title">AI Captions</div>
+                <div class="perk-desc">Written for your brand voice</div>
+            </div>
+            <div class="perk-card">
+                <div class="perk-icon">🖼️</div>
+                <div class="perk-title">Auto Imagery</div>
+                <div class="perk-desc">Matched to your style</div>
+            </div>
+            <div class="perk-card">
+                <div class="perk-icon">⏱️</div>
+                <div class="perk-title">Weekly Batch</div>
+                <div class="perk-desc">Ready every Monday</div>
+            </div>
+        </div>
+
+        <div class="next-steps">
+            <h3>What happens next</h3>
+            <div class="next-step-item"><span class="num">1</span> Review your generated posts on the dashboard</div>
+            <div class="next-step-item"><span class="num">2</span> Approve the ones you like, regenerate if needed</div>
+            <div class="next-step-item"><span class="num">3</span> Next Monday, new content arrives automatically</div>
+        </div>
+
+        <a href="/app/dashboard.html" class="btn btn-primary">Go to Dashboard →</a>
+
+        <div class="footer-links">
+            <a href="mailto:hello@postmate.net" style="font-size:13px;color:var(--muted);text-decoration:none">Need help? Contact us</a>
+        </div>
+    </div>
+</body>
+</html>

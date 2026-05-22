@@ -7,6 +7,26 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/app/css/app.css">
+    <style>
+        /* First-time banner */
+        .ft-banner {background:linear-gradient(135deg,var(--accent),#ec4899);border-radius:var(--radius);padding:24px 32px;margin-bottom:24px;color:#fff;display:none}
+        .ft-banner h3 {font-size:18px;font-weight:700;margin-bottom:4px}
+        .ft-banner p {font-size:14px;opacity:.9;margin-bottom:12px}
+        .ft-banner .btn {background:#fff;color:var(--accent);width:auto;padding:10px 20px;font-size:14px}
+
+        /* No-brand state */
+        .nb-state {text-align:center;padding:60px 0;display:none}
+        .nb-state .icon {font-size:56px;margin-bottom:16px}
+        .nb-state h2 {font-size:22px;font-weight:700;margin-bottom:8px}
+        .nb-state p {color:var(--muted);margin-bottom:24px;max-width:360px;margin-left:auto;margin-right:auto}
+
+        /* Generating state */
+        .gen-state {text-align:center;padding:60px 0;display:none}
+        .gen-state .spinner-lg {width:48px;height:48px;border:4px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .6s linear infinite;margin:0 auto}
+
+        /* Post grid */
+        .post-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px;margin-top:24px}
+    </style>
 </head>
 <body>
     <nav class="app-nav">
@@ -15,11 +35,34 @@
     </nav>
     <div class="container">
 
+        <!-- First-time banner (shown when ?first=true) -->
+        <div class="ft-banner" id="first-time-banner">
+            <h3>🎉 Your first week is ready!</h3>
+            <p>Review and approve your posts below. Next week's batch will be generated automatically.</p>
+            <button class="btn" onclick="document.getElementById('first-time-banner').style.display='none'">Got it!</button>
+        </div>
+
         <!-- Week navigation -->
-        <div class="week-nav">
+        <div class="week-nav" id="week-nav">
             <button class="btn btn-outline" id="prev-week">← Previous</button>
             <h2 id="week-label"></h2>
             <button class="btn btn-outline" id="next-week">Next →</button>
+        </div>
+
+        <!-- No brand state -->
+        <div class="nb-state" id="nb-state">
+            <div class="icon">🏪</div>
+            <h2>Set up your brand first</h2>
+            <p>You haven't created your brand profile yet. Tell us about your business and we'll start generating content.</p>
+            <a href="/app/onboarding.html" class="btn btn-primary" style="width:auto">Complete Setup →</a>
+        </div>
+
+        <!-- Generating state -->
+        <div class="gen-state" id="gen-state">
+            <div class="spinner-lg"></div>
+            <p style="margin-top:20px;color:var(--muted);font-size:15px">Generating your content...</p>
+            <p style="color:var(--muted);font-size:13px;margin-top:8px" id="gen-message">This takes about 30 seconds</p>
+            <a href="/app/generating.html" style="display:inline-block;margin-top:16px;font-size:13px;color:var(--accent)">View progress →</a>
         </div>
 
         <!-- Loading state -->
@@ -28,12 +71,12 @@
             <p style="margin-top:16px;color:var(--muted)">Loading your content...</p>
         </div>
 
-        <!-- Empty state -->
+        <!-- Empty state (no posts for this week) -->
         <div id="empty-state" style="text-align:center;padding:60px 0;display:none">
             <div style="font-size:48px;margin-bottom:16px">📝</div>
-            <h2 style="font-size:22px;font-weight:700;margin-bottom:8px">No content yet</h2>
-            <p style="color:var(--muted);margin-bottom:24px">Generate your first week of posts to see them here.</p>
-            <button class="btn btn-primary" id="generate-btn" style="width:auto">Generate Next Week →</button>
+            <h2 style="font-size:22px;font-weight:700;margin-bottom:8px">No content this week</h2>
+            <p style="color:var(--muted);margin-bottom:24px">This week doesn't have any posts yet. Generate a new batch to get started.</p>
+            <button class="btn btn-primary" id="generate-btn" style="width:auto">Generate This Week →</button>
         </div>
 
         <!-- Post grid -->

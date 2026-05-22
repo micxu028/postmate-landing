@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generating — PostMate</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/app/css/app.css">
+    <style>
+        .gen-container {max-width:480px;margin:60px auto 0;padding:0 20px;text-align:center}
+        .gen-icon {font-size:56px;margin-bottom:16px}
+        .gen-title {font-size:22px;font-weight:800;margin-bottom:4px}
+        .gen-subtitle {color:var(--muted);font-size:15px;margin-bottom:32px}
+        .progress-track {background:var(--border);border-radius:100px;height:8px;overflow:hidden;margin-bottom:32px}
+        .progress-bar {height:100%;background:linear-gradient(135deg,var(--accent),#ec4899);border-radius:100px;transition:width .5s ease;width:5%}
+        .steps {text-align:left;max-width:320px;margin:0 auto}
+        .step-item {display:flex;align-items:center;gap:12px;padding:10px 0;opacity:.4;transition:all .4s}
+        .step-item.active {opacity:1}
+        .step-item.done {opacity:.6}
+        .step-item.done .step-icon {background:var(--green);color:#fff}
+        .step-item.active .step-icon {background:var(--accent);color:#fff;animation:pulse 1.5s infinite}
+        .step-icon {width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;background:var(--border);color:var(--muted);flex-shrink:0;transition:all .3s}
+        .step-text {font-size:14px;font-weight:500;color:var(--fg)}
+        .gen-tip {margin-top:40px;font-size:13px;color:var(--muted);font-style:italic;min-height:20px;transition:opacity .5s}
+        .gen-quote {margin-top:8px;font-size:12px;color:var(--muted)}
+        @keyframes pulse {0%,100%{box-shadow:0 0 0 0 rgba(124,58,237,.4)}50%{box-shadow:0 0 0 8px rgba(124,58,237,0)}}
+        .gen-eta {font-size:13px;color:var(--muted);margin-top:12px}
+    </style>
+</head>
+<body>
+    <nav class="app-nav">
+        <a href="/" class="logo">PostMate</a>
+    </nav>
+    <div class="gen-container">
+        <div class="gen-icon">🪄</div>
+        <h1 class="gen-title">Crafting your content</h1>
+        <p class="gen-subtitle" id="stage-message">Analyzing your brand...</p>
+
+        <div class="progress-track">
+            <div class="progress-bar" id="progress-bar"></div>
+        </div>
+
+        <div class="steps" id="steps">
+            <div class="step-item" data-stage="analyzing">
+                <div class="step-icon">1</div>
+                <span class="step-text">Analyzing your brand...</span>
+            </div>
+            <div class="step-item" data-stage="writing">
+                <div class="step-icon">2</div>
+                <span class="step-text">Writing captions...</span>
+            </div>
+            <div class="step-item" data-stage="images">
+                <div class="step-icon">3</div>
+                <span class="step-text">Searching for matching images...</span>
+            </div>
+            <div class="step-item" data-stage="formatting">
+                <div class="step-icon">4</div>
+                <span class="step-text">Formatting posts...</span>
+            </div>
+            <div class="step-item" data-stage="done">
+                <div class="step-icon">✓</div>
+                <span class="step-text">Almost done!</span>
+            </div>
+        </div>
+
+        <div class="gen-eta" id="eta-display">Estimated time: ~30 seconds</div>
+
+        <div class="gen-tip" id="tip-display">Did you know? Posts published on Tuesday mornings get the highest engagement rates.</div>
+    </div>
+    <script src="/app/js/api.js"></script>
+    <script>
+        const tips = [
+            "Posts published on Tuesday mornings get the highest engagement rates.",
+            "Instagram Reels reach 2x more non-followers than regular posts.",
+            "Using 3-5 relevant hashtags performs better than 30 generic ones.",
+            "Posts with storytelling captions see 2x more comments.",
+            "Consistent posting is the #1 growth driver on Instagram.",
+            "Carousel posts get 3x more engagement than single images.",
+            "The best time to post is when YOUR audience is active, not everyone else's.",
+        ];
+
+        const stageOrder = ['analyzing', 'writing', 'images', 'formatting', 'done'];
+        let currentStage = -1;
+        let pollTimer = null;
+        let tipTimer = null;
+        let tipIndex = 0;
+
+        function getStageIndex(stage) {
+            return stageOrder.indexOf(stage);
+        }
+
+        function updateUI(data) {
+            const pct = data.progress || 0;
+            document.getElementById('progress-bar').style.width = pct + '%';
+            document.getElementById('stage-message').textContent = data.message || 'Working...';
+
+            const stepIndex = getStageIndex(data.stage);
+            document.querySelectorAll('.step-item').forEach((el, i) => {
+                el.classList.toggle('active', i === stepIndex);
+                el.classList.toggle('done', i < stepIndex);
+            });
+
+            if (data.stage === 'done' || data.stage === 'error') {
+                clearInterval(pollTimer);
+                clearInterval(tipTimer);
+                document.getElementById('eta-display').style.display = 'none';
+                if (data.stage === 'done') {
+                    setTimeout(() => {
+                        window.location.href = '/app/dashboard.html?first=true';
+                    }, 1500);
+                }
+            }
+        }
+
+        function rotateTip() {
+            const el = document.getElementById('tip-display');
+            el.style.opacity = '0';
+            setTimeout(() => {
+                tipIndex = (tipIndex + 1) % tips.length;
+                el.textContent = '💡 ' + tips[tipIndex];
+                el.style.opacity = '1';
+            }, 400);
+        }
+
+        async function pollStatus() {
+            try {
+                const data = await API.generationStatus();
+                updateUI(data);
+            } catch (err) {
+                console.warn('Poll failed:', err);
+            }
+        }
+
+        // Start generation on page load if not already running
+        async function startGeneration() {
+            try {
+                await API.generate();
+            } catch (err) {
+                console.warn('Generation trigger:', err);
+            }
+        }
+
+        // Poll every 1.5s
+        pollTimer = setInterval(pollStatus, 1500);
+        tipTimer = setInterval(rotateTip, 6000);
+
+        // Initial fetch
+        startGeneration();
+        pollStatus();
+    </script>
+</body>
+</html>

@@ -43,6 +43,7 @@ const API = (() => {
 
     // Generate
     generate: () => request('POST', '/api/generate'),
+    generationStatus: () => request('GET', '/api/generate/status'),
 
     // Invites (admin)
     createInvite: (email) => request('POST', '/api/invites', { email, count: 1 }),
