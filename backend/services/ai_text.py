@@ -56,12 +56,19 @@ async def generate_captions(brand) -> list[dict]:
     data = resp.json()
     content = data["choices"][0]["message"]["content"]
 
+    posts = _parse_json_response(content)
+
+    return posts
+
+
+def _parse_json_response(content: str) -> list[dict]:
+    """Extract and parse JSON array from LLM response text."""
     # Extract JSON array from response (handle any wrapping)
     content = content.strip()
     start = content.find("[")
     end = content.rfind("]")
     if start != -1 and end != -1 and end > start:
-        content = content[start:end+1]
+        content = content[start:end + 1]
 
     # Clean common JSON issues
     content = content.replace("```json", "").replace("```", "").replace("``", "")
@@ -70,13 +77,8 @@ async def generate_captions(brand) -> list[dict]:
     if content.startswith("json"):
         content = content[4:].strip()
 
-    try:
-        posts = json.loads(content)
-    except json.JSONDecodeError as e:
-        # Try again with more cleaning
-        # Remove trailing commas before closing bracket
-        import re
-        content = re.sub(r',\s*([\]}])', r'\1', content)
-        posts = json.loads(content)
+    import re
+    # Remove trailing commas before closing bracket
+    content = re.sub(r',\s*([\]}])', r'\1', content)
 
-    return posts
+    return json.loads(content)

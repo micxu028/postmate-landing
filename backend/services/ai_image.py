@@ -30,13 +30,13 @@ async def _mj_generate(image_prompt: str, brand_style: str, settings) -> Optiona
 
 
 def _unsplash_url(image_prompt: str) -> Optional[str]:
-    """Build an Unsplash source URL from the prompt keywords (no API key needed)."""
+    """Build a LoremFlickr URL from the prompt keywords (free, no API key needed)."""
     from urllib.parse import quote
     words = image_prompt[:120].replace(",", " ").split()
-    stopwords = {"a","an","the","with","in","on","at","for","of","to","and","is","that","this","style","shot","photo","photography","view","close","up","wide","angle","soft","clean"}
+    stopwords = {"a","an","the","with","in","on","at","for","of","to","and","is","that","this","style","shot","photo","photography","view","close","up","wide","angle","soft","clean","lighting"}
     keywords = [w for w in words if w.lower() not in stopwords and len(w) > 3][:3]
     query = ",".join(keywords) if keywords else "fitness"
-    return f"https://source.unsplash.com/400x400/?{quote(query)}"
+    return f"https://loremflickr.com/400/400/{quote(query)}"
 
 async def _unsplash_fallback(image_prompt: str, brand_style: str) -> Optional[str]:
     """Get an Unsplash image URL for the given prompt (no API key needed)."""
