@@ -56,7 +56,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const imageUrls = [];
     if (files) {
       for (const file of files) {
-        imageUrls.push(URL.createObjectURL(file));
+        try {
+          const formData = new FormData();
+          formData.append('file', file);
+          const res = await fetch('/api/upload', {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+            body: formData,
+          });
+          const data = await res.json();
+          if (res.ok) imageUrls.push(data.url);
+        } catch (err) {
+          console.warn('Upload failed, continuing:', err);
+        }
       }
     }
 

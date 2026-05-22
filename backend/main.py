@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from config import get_settings
-from routers import auth, brands, posts, generate, invites
+from routers import auth, brands, posts, generate, invites, upload
 from database import init_db
 
 settings = get_settings()
@@ -32,6 +32,12 @@ app.include_router(brands.router)
 app.include_router(posts.router)
 app.include_router(generate.router)
 app.include_router(invites.router)
+app.include_router(upload.router)
+
+# Serve uploaded files at /uploads
+uploads_dir = Path(__file__).parent / "uploads"
+if uploads_dir.exists():
+    app.mount("/uploads", StaticFiles(directory=str(uploads_dir)), name="uploads")
 
 # Serve app frontend (signup, onboarding, dashboard)
 static_dir = Path(__file__).parent / "static"
