@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invites — PostMate</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/app/css/app.css">
+    <style>
+        .invite-grid {max-width:640px;margin:0 auto}
+        .code-display {font-family:monospace;font-size:15px;background:#f3f4f6;padding:8px 12px;border-radius:8px;word-break:break-all}
+        .copy-btn {background:none;border:1px solid var(--border);border-radius:6px;padding:6px 10px;cursor:pointer;font-size:12px;color:var(--muted)}
+        .copy-btn:hover {border-color:var(--accent);color:var(--accent)}
+        .invite-row {display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border)}
+        .invite-row:last-child {border-bottom:none}
+        .invite-meta {font-size:13px;color:var(--muted)}
+        .used-badge {background:#d1fae5;color:#059669;padding:2px 8px;border-radius:100px;font-size:11px;font-weight:600}
+        .unused-badge {background:#fef3c7;color:#d97706;padding:2px 8px;border-radius:100px;font-size:11px;font-weight:600}
+    </style>
+</head>
+<body>
+    <nav class="app-nav">
+        <a href="/" class="logo">PostMate</a>
+        <a href="/app/dashboard.html" style="font-size:14px;color:var(--accent);text-decoration:none;font-weight:600">Dashboard</a>
+    </nav>
+    <div class="container">
+        <div class="card invite-grid">
+            <h1>Invites</h1>
+            <p>Generate beta invite codes to send to your users.</p>
+
+            <form id="create-form" style="display:flex;gap:8px;margin-bottom:24px">
+                <div style="flex:1">
+                    <input type="email" id="invite-email" placeholder="Email (optional)" style="width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:14px;font-family:inherit">
+                </div>
+                <button type="submit" class="btn btn-primary" id="create-btn" style="width:auto;white-space:nowrap">Generate →</button>
+            </form>
+
+            <div id="invite-list">
+                <div style="text-align:center;padding:32px 0;color:var(--muted)">
+                    <div class="spinner"></div>
+                    <p style="margin-top:12px">Loading invites...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="/app/js/api.js"></script>
+    <script>
+        // Redirect if not logged in
+        const token = localStorage.getItem('token');
+        if (!token) window.location.href = '/app/login.html';
+
+        async function loadInvites() {
+            try {
+                const data = await API.listInvites();
+                const container = document.getElementById('invite-list');
+                if (data.length === 0) {
+                    container.innerHTML = '<p style="text-align:center;padding:32px 0;color:var(--muted)">No invites yet. Generate your first one above.</p>';
+                    return;
+                }
+                container.innerHTML = data.map(inv => `
+                    <div class="invite-row">
+                        <div>
+                            <div class="code-display">${inv.code}</div>
+                            <div class="invite-meta">${inv.email || 'no email'} · ${new Date(inv.created_at).toLocaleDateString()}</div>
+                        </div>
+                        <span class="${inv.used ? 'used-badge' : 'unused-badge'}">${inv.used ? 'Used' : 'Active'}</span>
+                    </div>
+                `).join('');
+            } catch (err) {
+                document.getElementById('invite-list').innerHTML = `<p style="text-align:center;padding:32px 0;color:var(--red)">Failed to load invites: ${err.message}</p>`;
+            }
+        }
+
+        document.getElementById('create-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('create-btn');
+            btn.disabled = true; btn.textContent = 'Generating...';
+            try {
+                const email = document.getElementById('invite-email').value.trim() || null;
+                const data = await API.createInvite(email);
+                document.getElementById('invite-email').value = '';
+                await loadInvites();
+                alert(`Invite code generated: ${data.codes[0]}`);
+            } catch (err) {
+                alert(err.message);
+            }
+            btn.disabled = false; btn.textContent = 'Generate →';
+        });
+
+        loadInvites();
+    </script>
+</body>
+</html>

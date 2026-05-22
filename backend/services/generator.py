@@ -8,6 +8,7 @@ from sqlalchemy import select
 from database import async_session
 from models.post import Post
 from models.brand import Brand, BrandImage
+from models.user import User
 from services.ai_text import generate_captions
 from services.ai_image import generate_image
 from services.email_service import send_email, build_content_ready_email
@@ -24,6 +25,10 @@ async def generate_weekly_content(brand_id: UUID, user_id: str, image_urls: list
         if not brand:
             return
 
+        # Get user email for notification
+        user_result = await db.execute(select(User).where(User.id == UUID(user_id)))
+        user = user_result.scalar_one_or_none()
+
         try:
             captions = await generate_captions(brand)
         except Exception:
@@ -38,7 +43,7 @@ async def generate_weekly_content(brand_id: UUID, user_id: str, image_urls: list
 
         await db.flush()
 
-        # Generate images in parallel (MJ proxy returns None when not configured)
+        # Generate images in parallel
         image_tasks = []
         for item in captions:
             task = generate_image(item.get("image_prompt", ""), brand.style)
@@ -63,12 +68,13 @@ async def generate_weekly_content(brand_id: UUID, user_id: str, image_urls: list
         await db.commit()
 
     # Notify user (best-effort)
-    preview_link = f"https://postmate.net/app/dashboard?week={week_start.isoformat()}"
-    try:
-        await send_email(
-            to=None,
-            subject=f"Your {brand.name} content is ready!",
-            html=build_content_ready_email(brand.name, preview_link),
-        )
-    except Exception:
-        pass
+    if user:
+        preview_link = f"https://postmate.net/app/dashboard?week={week_start.isoformat()}"
+        try:
+            await send_email(
+                to=user.email,
+                subject=f"Your {brand.name} content is ready!",
+                html=build_content_ready_email(brand.name, preview_link),
+            )
+        except Exception:
+            pass

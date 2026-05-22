@@ -36,6 +36,8 @@
     </div>
     <script src="/app/js/api.js"></script>
     <script>
+        const inviteCode = new URLSearchParams(window.location.search).get('code');
+
         document.getElementById('signup-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('submit-btn');
@@ -43,7 +45,8 @@
             try {
                 const data = await API.register(
                     document.getElementById('email').value,
-                    document.getElementById('password').value
+                    document.getElementById('password').value,
+                    inviteCode
                 );
                 localStorage.setItem('token', data.token);
                 window.location.href = '/app/onboarding.html';

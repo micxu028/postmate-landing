@@ -26,8 +26,8 @@ const API = (() => {
 
   return {
     // Auth
-    register: (email, password) =>
-      request('POST', '/api/auth/register', { email, password }),
+    register: (email, password, inviteCode) =>
+      request('POST', '/api/auth/register', { email, password, invite_code: inviteCode }),
     login: (email, password) =>
       request('POST', '/api/auth/login', { email, password }),
     me: () => request('GET', '/api/auth/me'),
@@ -43,5 +43,10 @@ const API = (() => {
 
     // Generate
     generate: () => request('POST', '/api/generate'),
+
+    // Invites (admin)
+    createInvite: (email) => request('POST', '/api/invites', { email, count: 1 }),
+    listInvites: () => request('GET', '/api/invites'),
+    validateInvite: (code) => request('GET', `/api/invites/validate/${encodeURIComponent(code)}`),
   };
 })();

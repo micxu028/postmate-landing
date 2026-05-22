@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from config import get_settings
-from routers import auth, brands, posts, generate
+from routers import auth, brands, posts, generate, invites
 from database import init_db
 
 settings = get_settings()
@@ -31,6 +31,7 @@ app.include_router(auth.router)
 app.include_router(brands.router)
 app.include_router(posts.router)
 app.include_router(generate.router)
+app.include_router(invites.router)
 
 # Serve app frontend (signup, onboarding, dashboard)
 static_dir = Path(__file__).parent / "static"
