@@ -3,11 +3,11 @@ from config import get_settings
 
 settings = get_settings()
 
-# SQLite needs check_same_thread=False; PostgreSQL needs SSL
+# SQLite needs check_same_thread=False; external PostgreSQL needs SSL
 connect_args = {}
 if settings.database_url.startswith("sqlite"):
     connect_args["check_same_thread"] = False
-elif "postgresql" in settings.database_url:
+elif ".railway.internal" not in settings.database_url and "postgresql" in settings.database_url:
     connect_args["ssl"] = "require"
 
 engine = create_async_engine(settings.database_url, echo=settings.debug, connect_args=connect_args)
