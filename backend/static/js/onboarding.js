@@ -14,13 +14,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
   let currentStep = 0;
 
-  // Card select
-  document.querySelectorAll('.card-option').forEach(card => {
-    card.addEventListener('click', () => {
-      const parent = card.parentElement;
-      parent.querySelectorAll('.card-option').forEach(c => c.classList.remove('selected'));
-      card.classList.add('selected');
-    });
+  // Card select — event delegation on parent groups
+  document.getElementById('style-select')?.addEventListener('click', (e) => {
+    const card = e.target.closest('.card-option');
+    if (!card) return;
+    card.parentElement.querySelectorAll('.card-option').forEach(c => c.classList.remove('selected'));
+    card.classList.add('selected');
+  });
+  document.getElementById('tone-select')?.addEventListener('click', (e) => {
+    const card = e.target.closest('.card-option');
+    if (!card) return;
+    card.parentElement.querySelectorAll('.card-option').forEach(c => c.classList.remove('selected'));
+    card.classList.add('selected');
   });
 
   // Frequency slider
